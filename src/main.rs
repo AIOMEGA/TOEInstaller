@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use std::{fs, io, path, sync::mpsc, thread};
 
 use anyhow::{Context, Error, Result};
