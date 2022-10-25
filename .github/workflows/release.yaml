@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build_windows:
+    name: Build windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+
+      - name: Build With Cargo
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: toe_installer_windows
+          path: target/release/toe_installer.exe
+
+  build_linux:
+    name: Build linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+
+      - name: Build With Cargo
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: toe_installer_linux
+          path: target/release/toe_installer
+
+  release:
+    name: Release
+    needs: [build_windows, build_linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Move
+        run: |
+          mv toe_installer_windows/toe_installer.exe ToeInstaller.exe
+          mv toe_installer_linux/toe_installer toe_installer
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ToeInstaller.exe
+            toe_installer
